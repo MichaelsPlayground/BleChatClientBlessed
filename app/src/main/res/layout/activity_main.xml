@@ -116,64 +116,41 @@
                     android:text="disable all subscriptions" />
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/etMainBatteryLevelLayout"
+                    android:id="@+id/etMainDataToSendsLayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
+                    android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:hint="Battery Level on server"
+                    android:layout_marginEnd="8dp"
+                    android:hint="enter some data"
                     android:visibility="visible"
                     app:boxCornerRadiusBottomEnd="5dp"
                     app:boxCornerRadiusBottomStart="5dp"
                     app:boxCornerRadiusTopEnd="5dp"
                     app:boxCornerRadiusTopStart="5dp"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="15"
+                    app:endIconContentDescription="Send"
+                    app:endIconDrawable="@drawable/ic_baseline_send_24"
+                    app:endIconMode="custom"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etMainBatteryLevel"
+                        android:id="@+id/etMainDataToSend"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
-                        android:focusable="false"
-                        android:text="waiting for the device"
-                        android:textSize="14sp"
+                        android:maxLength="15"
+                        android:maxLines="1"
+                        android:text=""
                         android:visibility="visible"
                         tools:ignore="KeyboardInaccessibleWidget" />
+
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/etMainCurrentTimeLayout"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:hint="Current time on server"
-                    android:visibility="visible"
-                    app:boxCornerRadiusBottomEnd="5dp"
-                    app:boxCornerRadiusBottomStart="5dp"
-                    app:boxCornerRadiusTopEnd="5dp"
-                    app:boxCornerRadiusTopStart="5dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etMainCurrentTime"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:focusable="false"
-                        android:text="waiting for a data transfer"
-                        android:textSize="14sp"
-                        android:visibility="visible"
-                        tools:ignore="KeyboardInaccessibleWidget" />
-                </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/etMainHeartRateLayout"
@@ -204,16 +181,6 @@
                         android:visibility="visible"
                         tools:ignore="KeyboardInaccessibleWidget" />
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <TextView
-                    android:id="@+id/bloodPressureValue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="48dp"
-                    android:text="waiting for other measurements..."
-                    android:textAlignment="center"
-                    android:textSize="24sp" />
 
             </LinearLayout>
         </LinearLayout>

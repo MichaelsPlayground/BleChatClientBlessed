@@ -1,4 +1,4 @@
-package de.androidcrypto.bleclientblessedpart4;
+package de.androidcrypto.blechatclientblessed;
 
 public enum TemperatureUnit {
     Celsius,

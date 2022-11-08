@@ -1,4 +1,4 @@
-package de.androidcrypto.bleclientblessedpart4;
+package de.androidcrypto.blechatclientblessed;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -13,8 +13,10 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -55,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
     // new in part 3
     com.google.android.material.textfield.TextInputEditText batteryLevel;
 
+    com.google.android.material.textfield.TextInputLayout dataToSendLayout;
+    com.google.android.material.textfield.TextInputEditText dataToSend;
+
     // new in part 2
     BluetoothHandler bluetoothHandler;
     String peripheralMacAddress; // filled by BroadcastReceiver getPeripheralMacAddressStateReceiver
@@ -76,15 +81,14 @@ public class MainActivity extends AppCompatActivity {
         enableSubscriptions = findViewById(R.id.btnMainEnableAllSubscriptions);
         disableSubscriptions = findViewById(R.id.btnMainDisableAllSubscriptions);
         heartRate = findViewById(R.id.etMainHeartRate);
-        currentTime = findViewById(R.id.etMainCurrentTime);
-
-        // new in part 3
-        batteryLevel = findViewById(R.id.etMainBatteryLevel);
+        dataToSendLayout = findViewById(R.id.etMainDataToSendsLayout);
+        dataToSend = findViewById(R.id.etMainDataToSend);
 
         // new in part 4
         listDevices = findViewById(R.id.btnMainListDevices);
 
-        measurementValue = findViewById(R.id.bloodPressureValue);
+        // new in chat
+        registerReceiver(chatMessageDataReceiver, new IntentFilter(BluetoothHandler.BLUETOOTH_CHAT));
 
         // new in part 2
         registerReceiver(getPeripheralMacAddressStateReceiver, new IntentFilter(BluetoothHandler.BLUETOOTHHANDLER_PERIPHERAL_MAC_ADDRESS));
@@ -94,16 +98,17 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(batteryLevelDataReceiver, new IntentFilter(BluetoothHandler.BLUETOOTHHANDLER_BATTERY_LEVEL));
 
         registerReceiver(locationServiceStateReceiver, new IntentFilter((LocationManager.MODE_CHANGED_ACTION)));
-        registerReceiver(bloodPressureDataReceiver, new IntentFilter( BluetoothHandler.MEASUREMENT_BLOODPRESSURE ));
-        registerReceiver(temperatureDataReceiver, new IntentFilter( BluetoothHandler.MEASUREMENT_TEMPERATURE ));
-        registerReceiver(heartRateDataReceiver, new IntentFilter( BluetoothHandler.MEASUREMENT_HEARTRATE ));
-        registerReceiver(pulseOxDataReceiver, new IntentFilter( BluetoothHandler.MEASUREMENT_PULSE_OX ));
+        registerReceiver(bloodPressureDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_BLOODPRESSURE));
+        registerReceiver(temperatureDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_TEMPERATURE));
+        registerReceiver(heartRateDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_HEARTRATE));
+        registerReceiver(pulseOxDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_PULSE_OX));
         registerReceiver(weightDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_WEIGHT));
         registerReceiver(glucoseDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_GLUCOSE));
 
         // this is for debug purposes - it leaves the screen on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        /*
         // new in part 2
         connectToHrsDevices.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,6 +119,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+         */
 
         // new in part 2
         disconnectFromHrsDevice.setOnClickListener(new View.OnClickListener() {
@@ -207,6 +214,41 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("Main", "null pointer exception: " + e.toString());
             }
         }
+
+        // new in chat
+        // todo enable/disable input on connection state
+        dataToSendLayout.setEndIconOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (bluetoothHandler != null) {
+                    if (peripheralMacAddress != null) {
+
+
+                        if (peripheralMacAddress.length() > 16) {
+                            String dataToSendString = dataToSend.getText().toString();
+                            Log.i("Main", "send data");
+                            bluetoothHandler.sendData(peripheralMacAddress, dataToSendString);
+                            System.out.println("*** sendData: " + dataToSendString);
+                            // clear edittext
+                            dataToSend.setText("");
+                            // todo implement a recyclerview
+                        }
+                    }
+                }
+
+            }
+        });
+
+        // new in chat
+        connectToHrsDevices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (bluetoothHandler != null) {
+                    Log.i("Main", "connectToChatDevices");
+                    bluetoothHandler.connectToChatServiceDevice();
+                }
+            }
+        });
     }
 
     @SuppressLint("MissingPermission")
@@ -228,13 +270,12 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isBluetoothEnabled() {
         BluetoothAdapter bluetoothAdapter = getBluetoothManager().getAdapter();
-        if(bluetoothAdapter == null) return false;
+        if (bluetoothAdapter == null) return false;
 
         return bluetoothAdapter.isEnabled();
     }
 
-    private void initBluetoothHandler()
-    {
+    private void initBluetoothHandler() {
         // BluetoothHandler.getInstance(getApplicationContext());
         // new in part 2
         bluetoothHandler = BluetoothHandler.getInstance(getApplicationContext());
@@ -242,12 +283,16 @@ public class MainActivity extends AppCompatActivity {
 
     @NotNull
     private BluetoothManager getBluetoothManager() {
-        return Objects.requireNonNull((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE),"cannot get BluetoothManager");
+        return Objects.requireNonNull((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE), "cannot get BluetoothManager");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // new in chat
+        unregisterReceiver(chatMessageDataReceiver);
+
         // new in part 2
         unregisterReceiver(getPeripheralMacAddressStateReceiver);
         unregisterReceiver(currentTimeDataReceiver);
@@ -267,6 +312,18 @@ public class MainActivity extends AppCompatActivity {
     /**
      * section for BroadcastReceiver
      */
+
+    private final BroadcastReceiver chatMessageDataReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String dataString = intent.getStringExtra(BluetoothHandler.BLUETOOTH_CHAT_EXTRA);
+            if (dataString == null) return;
+            // todo implement receyclerview
+            System.out.println("*** received message: " + dataString);
+            connectedDevice.setText(dataString);
+            //batteryLevel.setText(resultString);
+        }
+    };
 
     // new in part 3
     private final BroadcastReceiver batteryLevelDataReceiver = new BroadcastReceiver() {

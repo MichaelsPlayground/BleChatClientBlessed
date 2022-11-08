@@ -38,13 +38,13 @@
         android:layout_marginRight="20dp"
         android:layout_marginTop="15dp" >
 
-        <de.androidcrypto.bleclientblessedpart4.NestedListView
+        <de.androidcrypto.blechatclientblessed.NestedListView
             android:id="@+id/paired_devices"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_marginBottom="2dp"
             android:layout_weight="1">
-        </de.androidcrypto.bleclientblessedpart4.NestedListView>
+        </de.androidcrypto.blechatclientblessed.NestedListView>
     </LinearLayout>
 
     <TextView
@@ -66,13 +66,13 @@
         android:layout_marginRight="20dp"
         android:layout_marginTop="15dp" >
 
-        <de.androidcrypto.bleclientblessedpart4.NestedListView
+        <de.androidcrypto.blechatclientblessed.NestedListView
             android:id="@+id/new_devices"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_marginBottom="2dp"
             android:layout_weight="1">
-        </de.androidcrypto.bleclientblessedpart4.NestedListView>
+        </de.androidcrypto.blechatclientblessed.NestedListView>
     </LinearLayout>
 
     <Button

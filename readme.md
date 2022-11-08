@@ -1,5 +1,9 @@
 # Bluetooth Low Energy Client with BLESSED-ANDROID library (part 4)
 
+**This is an unfinished project !!**
+
+
+
 For reconnecting:
 ```plaintext
 https://github.com/weliem/blessed-android/issues/61

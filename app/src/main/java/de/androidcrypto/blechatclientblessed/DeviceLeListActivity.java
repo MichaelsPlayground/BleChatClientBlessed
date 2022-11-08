@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.androidcrypto.bleclientblessedpart4;
+package de.androidcrypto.blechatclientblessed;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

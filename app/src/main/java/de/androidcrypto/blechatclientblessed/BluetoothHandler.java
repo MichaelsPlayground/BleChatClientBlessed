@@ -1,4 +1,4 @@
-package de.androidcrypto.bleclientblessedpart4;
+package de.androidcrypto.blechatclientblessed;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -12,7 +12,6 @@ import com.welie.blessed.BluetoothCentralManager;
 import com.welie.blessed.BluetoothCentralManagerCallback;
 import com.welie.blessed.BluetoothPeripheral;
 import com.welie.blessed.BluetoothPeripheralCallback;
-import com.welie.blessed.BondState;
 import com.welie.blessed.ConnectionPriority;
 import com.welie.blessed.GattStatus;
 import com.welie.blessed.HciStatus;
@@ -22,17 +21,14 @@ import com.welie.blessed.WriteType;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 import java.util.UUID;
 
 import timber.log.Timber;
 
 import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE;
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_SINT16;
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT16;
 import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
 import static com.welie.blessed.BluetoothBytesParser.bytes2String;
 
@@ -44,6 +40,15 @@ class BluetoothHandler {
     // new in part 2
     public static final String BLUETOOTHHANDLER_PERIPHERAL_MAC_ADDRESS = "androidcrypto.bluetoothhandler.peripheralmacaddress";
     public static final String BLUETOOTHHANDLER_PERIPHERAL_MAC_ADDRESS_EXTRA = "androidcrypto.bluetoothhandler.peripheralmacaddress.extra";
+
+    // new in chat, randomly generated UUID (e.g. https://www.uuidgenerator.net/version4)
+    private static final UUID BLUETOOTH_CHAT_SERVICE_UUID = UUID.fromString("00008dc1-c6a2-484f-9dae-93a63ad832a5");
+    private static final UUID BLUETOOTH_CHAT_CHARACTERISTIC_UUID = UUID.fromString("00008dc2-c6a2-484f-9dae-93a63ad832a5");
+    // receive chat messages
+    public static final String BLUETOOTH_CHAT = "androidcrypto.bluetooth.chat";
+    public static final String BLUETOOTH_CHAT_EXTRA = "androidcrypto.bluetooth.chat.extra";
+
+
     public static final String BLUETOOTHHANDLER_CURRENT_TIME = "androidcrypto.bluetoothhandler.currenttime";
     public static final String BLUETOOTHHANDLER_CURRENT_TIME_EXTRA = "androidcrypto.bluetoothhandler.currenttime.extra";
     // new in part 3
@@ -116,6 +121,25 @@ class BluetoothHandler {
     private final Handler handler = new Handler();
     private int currentTimeCounter = 0;
 
+    // new in chat
+    public void sendData(String peripheralMacAddress, String dataToSendString) {
+        Timber.i("send data: %s", dataToSendString);
+
+        byte[] value = dataToSendString.getBytes(StandardCharsets.UTF_8);
+        // todo check for data length and MTU
+        // If it has the write property we write the current time
+        try {
+            // write the data to the device
+            BluetoothPeripheral connectedPeripheral = central.getPeripheral(peripheralMacAddress);
+            System.out.println("*** currentMTU: " + connectedPeripheral.getCurrentMtu());
+            connectedPeripheral.writeCharacteristic(BLUETOOTH_CHAT_SERVICE_UUID, BLUETOOTH_CHAT_CHARACTERISTIC_UUID, value, WriteType.WITHOUT_RESPONSE);
+            System.out.println("*** data send to peripheral: " + dataToSendString);
+        } catch (IllegalArgumentException e) {
+            // do nothing
+            System.out.println("writeCharacteristic not allowed");
+        }
+    }
+
     // new in part 4
     public void connectToAddress(String peripheralMacAddress) {
         Timber.i("BH connectToAddress: %s", peripheralMacAddress);
@@ -127,6 +151,11 @@ class BluetoothHandler {
     // new in part 2
     public void connectToHeartRateServiceDevice() {
         startScanHrs();
+    }
+
+    // new in chat
+    public void connectToChatServiceDevice() {
+        startScanChat();
     }
 
     // new in part 2
@@ -194,20 +223,6 @@ class BluetoothHandler {
                 }
             }
 
-            // Try to turn on notifications for other characteristics
-            // peripheral.readCharacteristic(BATTERY_LEVEL_SERVICE_UUID, BATTERY_LEVEL_CHARACTERISTIC_UUID);
-            /* enabling is handled in enableAllSubscriptions
-            peripheral.setNotify(BLOOD_PRESSURE_SERVICE_UUID, BLOOD_PRESSURE_MEASUREMENT_CHARACTERISTIC_UUID, true);
-            peripheral.setNotify(HEALTH_THERMOMETER_SERVICE_UUID, TEMPERATURE_MEASUREMENT_CHARACTERISTIC_UUID, true);
-            peripheral.setNotify(HEART_RATE_SERVICE_UUID, HEART_RATE_MEASUREMENT_CHARACTERISTIC_UUID, true);
-            peripheral.setNotify(PULSE_OXIMETER_SERVICE_UUID, PULSE_OXIMETER_CONTINUOUS_MEASUREMENT_CHAR_UUID, true);
-            peripheral.setNotify(PULSE_OXIMETER_SERVICE_UUID, PULSE_OXIMETER_SPOT_MEASUREMENT_CHAR_UUID, true);
-            peripheral.setNotify(WEIGHT_SCALE_SERVICE_UUID, WEIGHT_SCALE_MEASUREMENT_CHAR_UUID, true);
-            peripheral.setNotify(GLUCOSE_SERVICE_UUID, GLUCOSE_MEASUREMENT_CHARACTERISTIC_UUID, true);
-            peripheral.setNotify(GLUCOSE_SERVICE_UUID, GLUCOSE_MEASUREMENT_CONTEXT_CHARACTERISTIC_UUID, true);
-            peripheral.setNotify(GLUCOSE_SERVICE_UUID, GLUCOSE_RECORD_ACCESS_POINT_CHARACTERISTIC_UUID, true);
-            peripheral.setNotify(CONTOUR_SERVICE_UUID, CONTOUR_CLOCK, true);
-             */
         }
 
         @Override
@@ -215,11 +230,7 @@ class BluetoothHandler {
             if (status == GattStatus.SUCCESS) {
                 final boolean isNotifying = peripheral.isNotifying(characteristic);
                 Timber.i("SUCCESS: Notify set to '%s' for %s", isNotifying, characteristic.getUuid());
-                if (characteristic.getUuid().equals(CONTOUR_CLOCK)) {
-                    writeContourClock(peripheral);
-                } else if (characteristic.getUuid().equals(GLUCOSE_RECORD_ACCESS_POINT_CHARACTERISTIC_UUID)) {
-                    writeGetAllGlucoseMeasurements(peripheral);
-                }
+
             } else {
                 Timber.e("ERROR: Changing notification state failed for %s (%s)", characteristic.getUuid(), status);
             }
@@ -242,49 +253,19 @@ class BluetoothHandler {
             BluetoothBytesParser parser = new BluetoothBytesParser(value);
 
             if (characteristicUUID.equals(BLOOD_PRESSURE_MEASUREMENT_CHARACTERISTIC_UUID)) {
-                BloodPressureMeasurement measurement = new BloodPressureMeasurement(value);
-                Intent intent = new Intent(MEASUREMENT_BLOODPRESSURE);
-                intent.putExtra(MEASUREMENT_BLOODPRESSURE_EXTRA, measurement);
+                String valueString = parser.getStringValue(0);
+                Timber.i("Received chat message %s%", valueString);
+                // new in chat
+                Intent intent = new Intent(BLUETOOTH_CHAT);
+                intent.putExtra(BLUETOOTH_CHAT_EXTRA, valueString);
                 sendMeasurement(intent, peripheral);
-                Timber.d("%s", measurement);
-            } else if (characteristicUUID.equals(TEMPERATURE_MEASUREMENT_CHARACTERISTIC_UUID)) {
-                TemperatureMeasurement measurement = new TemperatureMeasurement(value);
-                Intent intent = new Intent(MEASUREMENT_TEMPERATURE);
-                intent.putExtra(MEASUREMENT_TEMPERATURE_EXTRA, measurement);
-                sendMeasurement(intent, peripheral);
-                Timber.d("%s", measurement);
+
             } else if (characteristicUUID.equals(HEART_RATE_MEASUREMENT_CHARACTERISTIC_UUID)) {
                 HeartRateMeasurement measurement = new HeartRateMeasurement(value);
                 Intent intent = new Intent(MEASUREMENT_HEARTRATE);
                 intent.putExtra(MEASUREMENT_HEARTRATE_EXTRA, measurement);
                 sendMeasurement(intent, peripheral);
                 Timber.d("HeartRate %s", measurement);
-            } else if (characteristicUUID.equals(PULSE_OXIMETER_CONTINUOUS_MEASUREMENT_CHAR_UUID)) {
-                PulseOximeterContinuousMeasurement measurement = new PulseOximeterContinuousMeasurement(value);
-                if (measurement.getSpO2() <= 100 && measurement.getPulseRate() <= 220) {
-                    Intent intent = new Intent(MEASUREMENT_PULSE_OX);
-                    intent.putExtra(MEASUREMENT_PULSE_OX_EXTRA_CONTINUOUS, measurement);
-                    sendMeasurement(intent, peripheral);
-                }
-                Timber.d("%s", measurement);
-            } else if (characteristicUUID.equals(PULSE_OXIMETER_SPOT_MEASUREMENT_CHAR_UUID)) {
-                PulseOximeterSpotMeasurement measurement = new PulseOximeterSpotMeasurement(value);
-                Intent intent = new Intent(MEASUREMENT_PULSE_OX);
-                intent.putExtra(MEASUREMENT_PULSE_OX_EXTRA_SPOT, measurement);
-                sendMeasurement(intent, peripheral);
-                Timber.d("%s", measurement);
-            } else if (characteristicUUID.equals(WEIGHT_SCALE_MEASUREMENT_CHAR_UUID)) {
-                WeightMeasurement measurement = new WeightMeasurement(value);
-                Intent intent = new Intent(MEASUREMENT_WEIGHT);
-                intent.putExtra(MEASUREMENT_WEIGHT_EXTRA, measurement);
-                sendMeasurement(intent, peripheral);
-                Timber.d("%s", measurement);
-            } else if (characteristicUUID.equals((GLUCOSE_MEASUREMENT_CHARACTERISTIC_UUID))) {
-                GlucoseMeasurement measurement = new GlucoseMeasurement(value);
-                Intent intent = new Intent(MEASUREMENT_GLUCOSE);
-                intent.putExtra(MEASUREMENT_GLUCOSE_EXTRA, measurement);
-                sendMeasurement(intent, peripheral);
-                Timber.d("%s", measurement);
             } else if (characteristicUUID.equals(CURRENT_TIME_CHARACTERISTIC_UUID)) {
                 Date currentTime = parser.getDateTime();
                 Timber.i("Received device time: %s", currentTime);
@@ -293,21 +274,6 @@ class BluetoothHandler {
                 sendMeasurement(intent, peripheral);
                 Timber.d("%s", currentTime);
 
-                // Deal with Omron devices where we can only write currentTime under specific conditions
-                if (isOmronBPM(peripheral.getName())) {
-                    BluetoothGattCharacteristic bloodpressureMeasurement = peripheral.getCharacteristic(BLOOD_PRESSURE_SERVICE_UUID, BLOOD_PRESSURE_MEASUREMENT_CHARACTERISTIC_UUID);
-                    if (bloodpressureMeasurement == null) return;
-
-                    boolean isNotifying = peripheral.isNotifying(bloodpressureMeasurement);
-                    if (isNotifying) currentTimeCounter++;
-
-                    // We can set device time for Omron devices only if it is the first notification and currentTime is more than 10 min from now
-                    long interval = abs(Calendar.getInstance().getTimeInMillis() - currentTime.getTime());
-                    if (currentTimeCounter == 1 && interval > 10 * 60 * 1000) {
-                        parser.setCurrentTime(Calendar.getInstance());
-                        peripheral.writeCharacteristic(characteristic, parser.getValue(), WriteType.WITH_RESPONSE);
-                    }
-                }
             } else if (characteristicUUID.equals(BATTERY_LEVEL_CHARACTERISTIC_UUID)) {
                 String valueString = parser.getIntValue(FORMAT_UINT8).toString();
                 Timber.i("Received battery level %s%%", valueString);
@@ -338,29 +304,6 @@ class BluetoothHandler {
             context.sendBroadcast(intent);
         }
 
-        private void writeContourClock(@NotNull BluetoothPeripheral peripheral) {
-            Calendar calendar = Calendar.getInstance();
-            int offsetInMinutes = calendar.getTimeZone().getRawOffset() / 60000;
-            int dstSavingsInMinutes = calendar.getTimeZone().getDSTSavings() / 60000;
-            calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
-            BluetoothBytesParser parser = new BluetoothBytesParser(ByteOrder.LITTLE_ENDIAN);
-            parser.setIntValue(1, FORMAT_UINT8);
-            parser.setIntValue(calendar.get(Calendar.YEAR), FORMAT_UINT16);
-            parser.setIntValue(calendar.get(Calendar.MONTH) + 1, FORMAT_UINT8);
-            parser.setIntValue(calendar.get(Calendar.DAY_OF_MONTH), FORMAT_UINT8);
-            parser.setIntValue(calendar.get(Calendar.HOUR_OF_DAY), FORMAT_UINT8);
-            parser.setIntValue(calendar.get(Calendar.MINUTE), FORMAT_UINT8);
-            parser.setIntValue(calendar.get(Calendar.SECOND), FORMAT_UINT8);
-            parser.setIntValue(offsetInMinutes + dstSavingsInMinutes, FORMAT_SINT16);
-            peripheral.writeCharacteristic(CONTOUR_SERVICE_UUID, CONTOUR_CLOCK, parser.getValue(), WriteType.WITH_RESPONSE);
-        }
-
-        private void writeGetAllGlucoseMeasurements(@NotNull BluetoothPeripheral peripheral) {
-            byte OP_CODE_REPORT_STORED_RECORDS = 1;
-            byte OPERATOR_ALL_RECORDS = 1;
-            final byte[] command = new byte[] {OP_CODE_REPORT_STORED_RECORDS, OPERATOR_ALL_RECORDS};
-            peripheral.writeCharacteristic(GLUCOSE_SERVICE_UUID, GLUCOSE_RECORD_ACCESS_POINT_CHARACTERISTIC_UUID, command, WriteType.WITH_RESPONSE);
-        }
     };
 
     // Callback for central
@@ -408,13 +351,15 @@ class BluetoothHandler {
             Timber.i("Found peripheral '%s'", peripheral.getName());
             central.stopScan();
 
+            central.connectPeripheral(peripheral, peripheralCallback);
+            /*
             if (peripheral.getName().contains("Contour") && peripheral.getBondState() == BondState.NONE) {
                 // Create a bond immediately to avoid double pairing popups
                 central.createBond(peripheral, peripheralCallback);
             } else {
                 central.connectPeripheral(peripheral, peripheralCallback);
                 //central.autoConnectPeripheral(peripheral, peripheralCallback);
-            }
+            }*/
         }
 
         @Override
@@ -486,6 +431,16 @@ class BluetoothHandler {
         },1000);
     }
 
+    // new in chat
+    // this will connect to HeartRateService devices only
+    private void startScanChat() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                central.scanForPeripheralsWithServices(new UUID[]{BLUETOOTH_CHAT_SERVICE_UUID});
+            }
+        },1000);
+    }
 
     private boolean isOmronBPM(final String name) {
         return name.contains("BLESmart_") || name.contains("BLEsmart_");
