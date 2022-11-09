@@ -82,7 +82,7 @@ public class DeviceLeListActivity extends AppCompatActivity {
     List<String> subject_list; // for temporary list
     SwitchMaterial scanFilterEnabled;
     // this is the UUID for filtering
-    private static final UUID HEART_RATE_SERVICE_UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");
+    private static final UUID CHAT_SERVICE_UUID = UUID.fromString("00008dc1-c6a2-484f-9dae-93a63ad832a5");
 
     /**
      * Newly discovered devices
@@ -230,7 +230,7 @@ public class DeviceLeListActivity extends AppCompatActivity {
                 // using a scan filter - here for fixed Heart Rate Service UUID
                 List<ScanFilter> leScanFilter = new ArrayList<ScanFilter>();
                 ScanFilter scanFilter = new ScanFilter.Builder()
-                        .setServiceUuid(new ParcelUuid(HEART_RATE_SERVICE_UUID))
+                        .setServiceUuid(new ParcelUuid(CHAT_SERVICE_UUID))
                         .build();
                 leScanFilter.add(scanFilter);
                 ScanSettings leScanSettings = new ScanSettings.Builder()

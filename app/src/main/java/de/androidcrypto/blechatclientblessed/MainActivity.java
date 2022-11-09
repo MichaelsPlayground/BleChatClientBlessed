@@ -51,11 +51,9 @@ public class MainActivity extends AppCompatActivity {
 
     // new in part 2
     Button connectToChatServiceDevices, disconnectFromChatServiceDevice;
-    com.google.android.material.textfield.TextInputEditText connectedDevice, heartRate, currentTime;
-    Button enableSubscriptions, disableSubscriptions;
-
-    // new in part 3
+    com.google.android.material.textfield.TextInputEditText connectedDevice, currentTime;
     com.google.android.material.textfield.TextInputEditText batteryLevel;
+    Button enableSubscriptions, disableSubscriptions;
 
     com.google.android.material.textfield.TextInputLayout dataToSendLayout;
     com.google.android.material.textfield.TextInputEditText dataToSend;
@@ -80,9 +78,9 @@ public class MainActivity extends AppCompatActivity {
         connectedDevice = findViewById(R.id.etMainConnectedDevice);
         enableSubscriptions = findViewById(R.id.btnMainEnableAllSubscriptions);
         disableSubscriptions = findViewById(R.id.btnMainDisableAllSubscriptions);
-        heartRate = findViewById(R.id.etMainHeartRate);
         dataToSendLayout = findViewById(R.id.etMainDataToSendsLayout);
         dataToSend = findViewById(R.id.etMainDataToSend);
+        batteryLevel = findViewById(R.id.etMainBatteryLevel);
 
         // new in part 4
         listDevices = findViewById(R.id.btnMainListDevices);
@@ -98,12 +96,6 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(batteryLevelDataReceiver, new IntentFilter(BluetoothHandler.BLUETOOTHHANDLER_BATTERY_LEVEL));
 
         registerReceiver(locationServiceStateReceiver, new IntentFilter((LocationManager.MODE_CHANGED_ACTION)));
-        registerReceiver(bloodPressureDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_BLOODPRESSURE));
-        registerReceiver(temperatureDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_TEMPERATURE));
-        registerReceiver(heartRateDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_HEARTRATE));
-        registerReceiver(pulseOxDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_PULSE_OX));
-        registerReceiver(weightDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_WEIGHT));
-        registerReceiver(glucoseDataReceiver, new IntentFilter(BluetoothHandler.MEASUREMENT_GLUCOSE));
 
         // this is for debug purposes - it leaves the screen on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -177,15 +169,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        /*
-        listDevices.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, DeviceListActivity.class);
-                startActivity(intent);
-            }
-        });
-*/
+
         // new in part 4
         // receive the address from DeviceListOwnActivity, if we receive data run the connection part
         Intent incommingIntent = getIntent();
@@ -301,12 +285,6 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(batteryLevelDataReceiver);
 
         unregisterReceiver(locationServiceStateReceiver);
-        unregisterReceiver(bloodPressureDataReceiver);
-        unregisterReceiver(temperatureDataReceiver);
-        unregisterReceiver(heartRateDataReceiver);
-        unregisterReceiver(pulseOxDataReceiver);
-        unregisterReceiver(weightDataReceiver);
-        unregisterReceiver(glucoseDataReceiver);
     }
 
     /**
@@ -384,81 +362,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
-
-    private final BroadcastReceiver bloodPressureDataReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            BluetoothPeripheral peripheral = getPeripheral(intent.getStringExtra(BluetoothHandler.MEASUREMENT_EXTRA_PERIPHERAL));
-            BloodPressureMeasurement measurement = (BloodPressureMeasurement) intent.getSerializableExtra(BluetoothHandler.MEASUREMENT_BLOODPRESSURE_EXTRA);
-            if (measurement == null) return;
-
-            measurementValue.setText(String.format(Locale.ENGLISH, "%.0f/%.0f %s, %.0f bpm\n%s\n\nfrom %s", measurement.systolic, measurement.diastolic, measurement.isMMHG ? "mmHg" : "kpa", measurement.pulseRate, dateFormat.format(measurement.timestamp), peripheral.getName()));
-        }
-    };
-
-    private final BroadcastReceiver temperatureDataReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            BluetoothPeripheral peripheral = getPeripheral(intent.getStringExtra(BluetoothHandler.MEASUREMENT_EXTRA_PERIPHERAL));
-            TemperatureMeasurement measurement = (TemperatureMeasurement) intent.getSerializableExtra(BluetoothHandler.MEASUREMENT_TEMPERATURE_EXTRA);
-            if (measurement == null) return;
-
-            measurementValue.setText(String.format(Locale.ENGLISH, "%.1f %s (%s)\n%s\n\nfrom %s", measurement.temperatureValue, measurement.unit == TemperatureUnit.Celsius ? "celsius" : "fahrenheit", measurement.type, dateFormat.format(measurement.timestamp), peripheral.getName()));
-        }
-    };
-
-    private final BroadcastReceiver heartRateDataReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            HeartRateMeasurement measurement = (HeartRateMeasurement) intent.getSerializableExtra(BluetoothHandler.MEASUREMENT_HEARTRATE_EXTRA);
-            if (measurement == null) return;
-            // changed in part 2
-            heartRate.setText(String.format(Locale.ENGLISH, "%d bpm", measurement.pulse));
-            //measurementValue.setText(String.format(Locale.ENGLISH, "%d bpm", measurement.pulse));
-        }
-    };
-
-    private final BroadcastReceiver pulseOxDataReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            BluetoothPeripheral peripheral = getPeripheral(intent.getStringExtra(BluetoothHandler.MEASUREMENT_EXTRA_PERIPHERAL));
-            PulseOximeterContinuousMeasurement measurement = (PulseOximeterContinuousMeasurement) intent.getSerializableExtra(BluetoothHandler.MEASUREMENT_PULSE_OX_EXTRA_CONTINUOUS);
-            if (measurement != null) {
-                measurementValue.setText(String.format(Locale.ENGLISH, "SpO2 %d%%,  Pulse %d bpm\n\nfrom %s", measurement.getSpO2(), measurement.getPulseRate(), peripheral.getName()));
-            }
-            PulseOximeterSpotMeasurement spotMeasurement = (PulseOximeterSpotMeasurement) intent.getSerializableExtra(BluetoothHandler.MEASUREMENT_PULSE_OX_EXTRA_SPOT);
-            if (spotMeasurement != null) {
-                measurementValue.setText(String.format(Locale.ENGLISH, "SpO2 %d%%,  Pulse %d bpm\n%s\n\nfrom %s", spotMeasurement.getSpO2(), spotMeasurement.getPulseRate(), dateFormat.format(spotMeasurement.getTimestamp()), peripheral.getName()));
-            }
-        }
-    };
-
-    private final BroadcastReceiver weightDataReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            BluetoothPeripheral peripheral = getPeripheral(intent.getStringExtra(BluetoothHandler.MEASUREMENT_EXTRA_PERIPHERAL));
-            WeightMeasurement measurement = (WeightMeasurement) intent.getSerializableExtra(BluetoothHandler.MEASUREMENT_WEIGHT_EXTRA);
-            if (measurement != null) {
-                measurementValue.setText(String.format(Locale.ENGLISH, "%.1f %s\n%s\n\nfrom %s", measurement.weight, measurement.unit.toString(), dateFormat.format(measurement.timestamp), peripheral.getName()));
-            }
-        }
-    };
-
-    private final BroadcastReceiver glucoseDataReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            BluetoothPeripheral peripheral = getPeripheral(intent.getStringExtra(BluetoothHandler.MEASUREMENT_EXTRA_PERIPHERAL));
-            GlucoseMeasurement measurement = (GlucoseMeasurement) intent.getSerializableExtra(BluetoothHandler.MEASUREMENT_GLUCOSE_EXTRA);
-            if (measurement != null) {
-                measurementValue.setText(String.format(Locale.ENGLISH, "%.1f %s\n%s\n\nfrom %s", measurement.value, measurement.unit == GlucoseMeasurementUnit.MmolPerLiter ? "mmol/L" : "mg/dL", dateFormat.format(measurement.timestamp), peripheral.getName()));
-            }
-        }
-    };
-
-    private BluetoothPeripheral getPeripheral(String peripheralAddress) {
-        BluetoothCentralManager central = BluetoothHandler.getInstance(getApplicationContext()).central;
-        return central.getPeripheral(peripheralAddress);
-    }
 
     /**
      * section for permissions

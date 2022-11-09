@@ -55,64 +55,16 @@ class BluetoothHandler {
     public static final String BLUETOOTHHANDLER_BATTERY_LEVEL = "androidcrypto.bluetoothhandler.batterylevel";
     public static final String BLUETOOTHHANDLER_BATTERY_LEVEL_EXTRA = "androidcrypto.bluetoothhandler.batterylevel.extra";
 
-    public static final String MEASUREMENT_BLOODPRESSURE = "androidcrypto.measurement.bloodpressure";
-    public static final String MEASUREMENT_BLOODPRESSURE_EXTRA = "androidcrypto.measurement.bloodpressure.extra";
-    public static final String MEASUREMENT_TEMPERATURE = "androidcrypto.measurement.temperature";
-    public static final String MEASUREMENT_TEMPERATURE_EXTRA = "androidcrypto.measurement.temperature.extra";
-    public static final String MEASUREMENT_HEARTRATE = "androidcrypto.measurement.heartrate";
-    public static final String MEASUREMENT_HEARTRATE_EXTRA = "androidcrypto.measurement.heartrate.extra";
-    public static final String MEASUREMENT_GLUCOSE = "androidcrypto.measurement.glucose";
-    public static final String MEASUREMENT_GLUCOSE_EXTRA = "androidcrypto.measurement.glucose.extra";
-    public static final String MEASUREMENT_PULSE_OX = "androidcrypto.measurement.pulseox";
-    public static final String MEASUREMENT_PULSE_OX_EXTRA_CONTINUOUS = "androidcrypto.measurement.pulseox.extra.continuous";
-    public static final String MEASUREMENT_PULSE_OX_EXTRA_SPOT = "androidcrypto.measurement.pulseox.extra.spot";
-    public static final String MEASUREMENT_WEIGHT = "androidcrypto.measurement.weight";
-    public static final String MEASUREMENT_WEIGHT_EXTRA = "androidcrypto.measurement.weight.extra";
     public static final String MEASUREMENT_EXTRA_PERIPHERAL = "androidcrypto.measurement.peripheral";
-
-    // UUIDs for the Blood Pressure service (BLP)
-    private static final UUID BLOOD_PRESSURE_SERVICE_UUID = UUID.fromString("00001810-0000-1000-8000-00805f9b34fb");
-    private static final UUID BLOOD_PRESSURE_MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A35-0000-1000-8000-00805f9b34fb");
-
-    // UUIDs for the Health Thermometer service (HTS)
-    private static final UUID HEALTH_THERMOMETER_SERVICE_UUID = UUID.fromString("00001809-0000-1000-8000-00805f9b34fb");
-    private static final UUID TEMPERATURE_MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A1C-0000-1000-8000-00805f9b34fb");
-    private static final UUID PNP_ID_CHARACTERISTIC_UUID = UUID.fromString("00002A50-0000-1000-8000-00805f9b34fb");
-
-    // UUIDs for the Heart Rate service (HRS)
-    private static final UUID HEART_RATE_SERVICE_UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");
-    private static final UUID HEART_RATE_MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb");
 
     // UUIDs for the Device Information service (DIS)
     private static final UUID DEVICE_INFORMATION_SERVICE_UUID = UUID.fromString("0000180A-0000-1000-8000-00805f9b34fb");
     private static final UUID MANUFACTURER_NAME_CHARACTERISTIC_UUID = UUID.fromString("00002A29-0000-1000-8000-00805f9b34fb");
     private static final UUID MODEL_NUMBER_CHARACTERISTIC_UUID = UUID.fromString("00002A24-0000-1000-8000-00805f9b34fb");
 
-    // UUIDs for the Current Time service (CTS)
-    private static final UUID CURRENT_TIME_SERVICE_UUID = UUID.fromString("00001805-0000-1000-8000-00805f9b34fb");
-    private static final UUID CURRENT_TIME_CHARACTERISTIC_UUID = UUID.fromString("00002A2B-0000-1000-8000-00805f9b34fb");
-
     // UUIDs for the Battery Service (BAS)
     private static final UUID BATTERY_LEVEL_SERVICE_UUID = UUID.fromString("0000180F-0000-1000-8000-00805f9b34fb");
     private static final UUID BATTERY_LEVEL_CHARACTERISTIC_UUID = UUID.fromString("00002A19-0000-1000-8000-00805f9b34fb");
-
-    // UUIDs for the Pulse Oximeter Service (PLX)
-    public static final UUID PULSE_OXIMETER_SERVICE_UUID = UUID.fromString("00001822-0000-1000-8000-00805f9b34fb");
-    private static final UUID PULSE_OXIMETER_SPOT_MEASUREMENT_CHAR_UUID = UUID.fromString("00002a5e-0000-1000-8000-00805f9b34fb");
-    private static final UUID PULSE_OXIMETER_CONTINUOUS_MEASUREMENT_CHAR_UUID = UUID.fromString("00002a5f-0000-1000-8000-00805f9b34fb");
-
-    // UUIDs for the Weight Scale Service (WSS)
-    public static final UUID WEIGHT_SCALE_SERVICE_UUID = UUID.fromString("0000181D-0000-1000-8000-00805f9b34fb");
-    private static final UUID WEIGHT_SCALE_MEASUREMENT_CHAR_UUID = UUID.fromString("00002A9D-0000-1000-8000-00805f9b34fb");
-
-    public static final UUID GLUCOSE_SERVICE_UUID = UUID.fromString("00001808-0000-1000-8000-00805f9b34fb");
-    public static final UUID GLUCOSE_MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A18-0000-1000-8000-00805f9b34fb");
-    public static final UUID GLUCOSE_RECORD_ACCESS_POINT_CHARACTERISTIC_UUID = UUID.fromString("00002A52-0000-1000-8000-00805f9b34fb");
-    public static final UUID GLUCOSE_MEASUREMENT_CONTEXT_CHARACTERISTIC_UUID = UUID.fromString("00002A34-0000-1000-8000-00805f9b34fb");
-
-    // Contour Glucose Service
-    public static final UUID CONTOUR_SERVICE_UUID = UUID.fromString("00000000-0002-11E2-9E96-0800200C9A66");
-    private static final UUID CONTOUR_CLOCK = UUID.fromString("00001026-0002-11E2-9E96-0800200C9A66");
 
     // Local variables
     public BluetoothCentralManager central;
@@ -175,25 +127,11 @@ class BluetoothHandler {
     // new in part 2
     public void enableAllSubscriptions(String peripheralMacAddress, boolean enable) {
         BluetoothPeripheral connectedPeripheral = central.getPeripheral(peripheralMacAddress);
-        connectedPeripheral.setNotify(CURRENT_TIME_SERVICE_UUID, CURRENT_TIME_CHARACTERISTIC_UUID, enable);
-        connectedPeripheral.setNotify(BLOOD_PRESSURE_SERVICE_UUID, BLOOD_PRESSURE_MEASUREMENT_CHARACTERISTIC_UUID, enable);
-        connectedPeripheral.setNotify(HEALTH_THERMOMETER_SERVICE_UUID, TEMPERATURE_MEASUREMENT_CHARACTERISTIC_UUID, enable);
-        connectedPeripheral.setNotify(HEART_RATE_SERVICE_UUID, HEART_RATE_MEASUREMENT_CHARACTERISTIC_UUID, enable);
-        connectedPeripheral.setNotify(PULSE_OXIMETER_SERVICE_UUID, PULSE_OXIMETER_CONTINUOUS_MEASUREMENT_CHAR_UUID, enable);
-        connectedPeripheral.setNotify(PULSE_OXIMETER_SERVICE_UUID, PULSE_OXIMETER_SPOT_MEASUREMENT_CHAR_UUID, enable);
-        connectedPeripheral.setNotify(WEIGHT_SCALE_SERVICE_UUID, WEIGHT_SCALE_MEASUREMENT_CHAR_UUID, enable);
-        connectedPeripheral.setNotify(GLUCOSE_SERVICE_UUID, GLUCOSE_MEASUREMENT_CHARACTERISTIC_UUID, enable);
-        connectedPeripheral.setNotify(GLUCOSE_SERVICE_UUID, GLUCOSE_MEASUREMENT_CONTEXT_CHARACTERISTIC_UUID, enable);
-        connectedPeripheral.setNotify(GLUCOSE_SERVICE_UUID, GLUCOSE_RECORD_ACCESS_POINT_CHARACTERISTIC_UUID, enable);
-        connectedPeripheral.setNotify(CONTOUR_SERVICE_UUID, CONTOUR_CLOCK, enable);
-        // new in part 3
         connectedPeripheral.setNotify(BATTERY_LEVEL_SERVICE_UUID, BATTERY_LEVEL_CHARACTERISTIC_UUID, enable);
     }
 
     // Callback for peripherals
     private final BluetoothPeripheralCallback peripheralCallback = new BluetoothPeripheralCallback() {
-
-
 
         @Override
         public void onServicesDiscovered(@NotNull BluetoothPeripheral peripheral) {
@@ -208,24 +146,6 @@ class BluetoothHandler {
             peripheral.readCharacteristic(DEVICE_INFORMATION_SERVICE_UUID, MANUFACTURER_NAME_CHARACTERISTIC_UUID);
             peripheral.readCharacteristic(DEVICE_INFORMATION_SERVICE_UUID, MODEL_NUMBER_CHARACTERISTIC_UUID);
             peripheral.readPhy();
-            // Turn on notifications for Current Time Service and write it if possible
-            BluetoothGattCharacteristic currentTimeCharacteristic = peripheral.getCharacteristic(CURRENT_TIME_SERVICE_UUID, CURRENT_TIME_CHARACTERISTIC_UUID);
-            if (currentTimeCharacteristic != null) {
-
-                // changed in part 2, is done in enableAllSubscriptions
-                //peripheral.setNotify(currentTimeCharacteristic, true);
-
-                // If it has the write property we write the current time
-                if ((currentTimeCharacteristic.getProperties() & PROPERTY_WRITE) > 0) {
-                    // Write the current time unless it is an Omron device
-                    if (!isOmronBPM(peripheral.getName())) {
-                        BluetoothBytesParser parser = new BluetoothBytesParser();
-                        parser.setCurrentTime(Calendar.getInstance());
-                        peripheral.writeCharacteristic(currentTimeCharacteristic, parser.getValue(), WriteType.WITH_RESPONSE);
-                    }
-                }
-            }
-
         }
 
         @Override
@@ -255,29 +175,7 @@ class BluetoothHandler {
             UUID characteristicUUID = characteristic.getUuid();
             BluetoothBytesParser parser = new BluetoothBytesParser(value);
 
-            if (characteristicUUID.equals(BLOOD_PRESSURE_MEASUREMENT_CHARACTERISTIC_UUID)) {
-                String valueString = parser.getStringValue(0);
-                Timber.i("Received chat message %s%", valueString);
-                // new in chat
-                Intent intent = new Intent(BLUETOOTH_CHAT);
-                intent.putExtra(BLUETOOTH_CHAT_EXTRA, valueString);
-                sendMeasurement(intent, peripheral);
-
-            } else if (characteristicUUID.equals(HEART_RATE_MEASUREMENT_CHARACTERISTIC_UUID)) {
-                HeartRateMeasurement measurement = new HeartRateMeasurement(value);
-                Intent intent = new Intent(MEASUREMENT_HEARTRATE);
-                intent.putExtra(MEASUREMENT_HEARTRATE_EXTRA, measurement);
-                sendMeasurement(intent, peripheral);
-                Timber.d("HeartRate %s", measurement);
-            } else if (characteristicUUID.equals(CURRENT_TIME_CHARACTERISTIC_UUID)) {
-                Date currentTime = parser.getDateTime();
-                Timber.i("Received device time: %s", currentTime);
-                Intent intent = new Intent(BLUETOOTHHANDLER_CURRENT_TIME);
-                intent.putExtra(BLUETOOTHHANDLER_CURRENT_TIME_EXTRA, currentTime.toString());
-                sendMeasurement(intent, peripheral);
-                Timber.d("%s", currentTime);
-
-            } else if (characteristicUUID.equals(BATTERY_LEVEL_CHARACTERISTIC_UUID)) {
+            if (characteristicUUID.equals(BATTERY_LEVEL_CHARACTERISTIC_UUID)) {
                 String valueString = parser.getIntValue(FORMAT_UINT8).toString();
                 Timber.i("Received battery level %s%%", valueString);
                 // new in part 3
@@ -291,9 +189,6 @@ class BluetoothHandler {
             } else if (characteristicUUID.equals(MODEL_NUMBER_CHARACTERISTIC_UUID)) {
                 String modelNumber = parser.getStringValue(0);
                 Timber.i("Received modelnumber: %s", modelNumber);
-            } else if (characteristicUUID.equals(PNP_ID_CHARACTERISTIC_UUID)) {
-                String modelNumber = parser.getStringValue(0);
-                Timber.i("Received pnp: %s", modelNumber);
             }
         }
 
@@ -355,14 +250,7 @@ class BluetoothHandler {
             central.stopScan();
 
             central.connectPeripheral(peripheral, peripheralCallback);
-            /*
-            if (peripheral.getName().contains("Contour") && peripheral.getBondState() == BondState.NONE) {
-                // Create a bond immediately to avoid double pairing popups
-                central.createBond(peripheral, peripheralCallback);
-            } else {
-                central.connectPeripheral(peripheral, peripheralCallback);
-                //central.autoConnectPeripheral(peripheral, peripheralCallback);
-            }*/
+
         }
 
         @Override
@@ -374,7 +262,7 @@ class BluetoothHandler {
                 central.startPairingPopupHack();
                 // changed in part 2
                 //startScan();
-                startScanHrs();
+                startScanChat();
             }
         }
 
@@ -423,16 +311,6 @@ class BluetoothHandler {
     }
     */
 
-    // new in part 2
-    // this will connect to HeartRateService devices only
-    private void startScanHrs() {
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                central.scanForPeripheralsWithServices(new UUID[]{HEART_RATE_SERVICE_UUID});
-            }
-        },1000);
-    }
 
     // new in chat
     // this will connect to HeartRateService devices only
