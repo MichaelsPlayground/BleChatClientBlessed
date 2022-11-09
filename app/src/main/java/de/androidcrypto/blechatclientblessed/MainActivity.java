@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     String macAddressFromScan = ""; // will get filled by Intent from DeviceScanActivity
 
     // new in part 2
-    Button connectToHrsDevices, disconnectFromHrsDevice;
+    Button connectToChatServiceDevices, disconnectFromChatServiceDevice;
     com.google.android.material.textfield.TextInputEditText connectedDevice, heartRate, currentTime;
     Button enableSubscriptions, disableSubscriptions;
 
@@ -75,8 +75,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // new in part 2
-        connectToHrsDevices = findViewById(R.id.btnMainConnectToHeartRateServiceDevices);
-        disconnectFromHrsDevice = findViewById(R.id.btnMainDisconnectFromHeartRateServiceDevice);
+        connectToChatServiceDevices = findViewById(R.id.btnMainConnectToChatServiceDevices);
+        disconnectFromChatServiceDevice = findViewById(R.id.btnMainDisconnectFromChatServiceDevice);
         connectedDevice = findViewById(R.id.etMainConnectedDevice);
         enableSubscriptions = findViewById(R.id.btnMainEnableAllSubscriptions);
         disableSubscriptions = findViewById(R.id.btnMainDisableAllSubscriptions);
@@ -123,15 +123,15 @@ public class MainActivity extends AppCompatActivity {
          */
 
         // new in part 2
-        disconnectFromHrsDevice.setOnClickListener(new View.OnClickListener() {
+        disconnectFromChatServiceDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (bluetoothHandler != null) {
                     if (peripheralMacAddress.length() > 16) {
-                        Log.i("Main", "disconnectFromHrsDevice");
+                        Log.i("Main", "disconnectFromChatServiceDevice");
                         System.out.println("periphalMac: " + peripheralMacAddress);
                         bluetoothHandler.enableAllSubscriptions(peripheralMacAddress, false);
-                        bluetoothHandler.disconnectFromHeartRateServiceDevice(peripheralMacAddress);
+                        bluetoothHandler.disconnectFromChatServiceDevice(peripheralMacAddress);
                     }
                 }
             }
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                     if (peripheralMacAddress.length() > 16) {
                         Log.i("Main", "enable all subscriptions");
                         bluetoothHandler.enableAllSubscriptions(peripheralMacAddress, true);
-                        disconnectFromHrsDevice.setEnabled(false);
+                        disconnectFromChatServiceDevice.setEnabled(false);
                         disableSubscriptions.setEnabled(true);
                         enableSubscriptions.setEnabled(false);
                     }
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                     if (peripheralMacAddress.length() > 16) {
                         Log.i("Main", "disable all subscriptions");
                         bluetoothHandler.enableAllSubscriptions(peripheralMacAddress, false);
-                        disconnectFromHrsDevice.setEnabled(true);
+                        disconnectFromChatServiceDevice.setEnabled(true);
                         enableSubscriptions.setEnabled(true);
                         disableSubscriptions.setEnabled(false);
                     }
@@ -240,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // new in chat
-        connectToHrsDevices.setOnClickListener(new View.OnClickListener() {
+        connectToChatServiceDevices.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (bluetoothHandler != null) {
@@ -347,16 +347,16 @@ public class MainActivity extends AppCompatActivity {
             // save the peripheralsMacAddress
             if (dataString.length() > 16) {
                 peripheralMacAddress = dataString.substring(0, 17);
-                connectToHrsDevices.setEnabled(false);
-                disconnectFromHrsDevice.setEnabled(true);
+                connectToChatServiceDevices.setEnabled(false);
+                disconnectFromChatServiceDevice.setEnabled(true);
                 connectedDevice.setText(dataString);
                 enableSubscriptions.setEnabled(true);
                 disableSubscriptions.setEnabled(false);
             } else {
                 peripheralMacAddress = "disconnected";
                 connectedDevice.setText(peripheralMacAddress);
-                connectToHrsDevices.setEnabled(true);
-                disconnectFromHrsDevice.setEnabled(false);
+                connectToChatServiceDevices.setEnabled(true);
+                disconnectFromChatServiceDevice.setEnabled(false);
                 enableSubscriptions.setEnabled(false);
                 disableSubscriptions.setEnabled(false);
             }

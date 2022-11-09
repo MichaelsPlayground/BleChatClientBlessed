@@ -26,13 +26,13 @@
             android:orientation="vertical">
 
             <Button
-                android:id="@+id/btnMainConnectToHeartRateServiceDevices"
+                android:id="@+id/btnMainConnectToChatServiceDevices"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="16dp"
-                android:text="connect to devices with a Heart Rate Service" />
+                android:text="connect to devices with a Chat Service" />
 
             <Button
                 android:id="@+id/btnMainListDevices"
@@ -44,14 +44,14 @@
                 android:text="list devices" />
 
             <Button
-                android:id="@+id/btnMainDisconnectFromHeartRateServiceDevice"
+                android:id="@+id/btnMainDisconnectFromChatServiceDevice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="16dp"
                 android:enabled="false"
-                android:text="disconnect from device with a Heart Rate Service" />
+                android:text="disconnect from device with a Chat Service" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/etMainConnectedDeviceDecoration"
@@ -147,6 +147,7 @@
                         android:maxLines="1"
                         android:text=""
                         android:visibility="visible"
+                        android:inputType="text"
                         tools:ignore="KeyboardInaccessibleWidget" />
 
                 </com.google.android.material.textfield.TextInputLayout>

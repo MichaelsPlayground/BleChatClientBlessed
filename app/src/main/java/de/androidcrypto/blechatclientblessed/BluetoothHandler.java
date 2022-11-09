@@ -149,9 +149,12 @@ class BluetoothHandler {
     }
 
     // new in part 2
+    /*
     public void connectToHeartRateServiceDevice() {
         startScanHrs();
     }
+
+     */
 
     // new in chat
     public void connectToChatServiceDevice() {
@@ -159,7 +162,7 @@ class BluetoothHandler {
     }
 
     // new in part 2
-    public void disconnectFromHeartRateServiceDevice(String peripheralMacAddress) {
+    public void disconnectFromChatServiceDevice(String peripheralMacAddress) {
         BluetoothPeripheral connectedPeripheral = central.getPeripheral(peripheralMacAddress);
         central.cancelConnection(connectedPeripheral);
         try {
